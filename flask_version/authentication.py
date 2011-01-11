@@ -6,12 +6,17 @@ authentication = Module('flask_version.authentication')
 ##################
 # Authentication #
 ##################
+@app.before_request
+def lookup_current_user():
+    g.username = None
+    if 'username' in session:
+        g.username = session['username']
 
 @authentication.route('/login', methods=['POST', 'GET'])
 def login():
     from sagenb.misc.misc import SAGE_VERSION
-    template_dict = {'accounts': g.notebook.get_accounts(),
-                     'default_user': g.notebook.default_user(),
+    template_dict = {'accounts': g.notebook.user_manager().get_accounts(),
+                     'default_user': g.notebook.user_manager().default_user(),
                      'recovery': g.notebook.conf()['email'],
                      'next': request.values.get('next', ''), 
                      'sage_version':SAGE_VERSION}
@@ -24,7 +29,7 @@ def login():
             return "Please enable cookies or delete all Sage cookies and localhost cookies in your browser and try again."
 
         try:
-            U = g.notebook.user(username)
+            U = g.notebook.user_manager().user(username)
         except KeyError:
             #log.msg("Login attempt by unknown user '%s'."%username)
             U = None
@@ -39,7 +44,7 @@ def login():
 
         if U is None:
             pass
-        elif U.password_is(password):
+        elif app.notebook.user_manager().check_password(username, password):
             if U.is_suspended():
                 #suspended
                 return "Your account is currently suspended"

@@ -10,7 +10,7 @@ def settings_page():
     error = None
     redirect_to_home = None
     redirect_to_logout = None
-    nu = g.notebook.user(g.username)
+    nu = g.notebook.user_manager().user(g.username)
 
     autosave = int(request.values.get('autosave', 0))*60
     if autosave:
@@ -23,7 +23,7 @@ def settings_page():
     if new or two:
         if not old:
             error = 'Old password not given'
-        elif not nu.password_is(old):
+        elif not app.notebook.user_manager().check_password(g.username, old):
             error = 'Incorrect password given'
         elif not new:
             error = 'New password not given'
@@ -35,7 +35,7 @@ def settings_page():
         if not error:
             # The browser may auto-fill in "old password," even
             # though the user may not want to change her password.
-            g.notebook.change_password(g.username, new)
+            g.notebook.user_manager().change_password(, new)
             redirect_to_logout = True
 
     if g.notebook.conf()['email']:

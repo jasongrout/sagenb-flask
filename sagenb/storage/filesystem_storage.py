@@ -151,7 +151,8 @@ class FilesystemDatastore(Datastore):
         return dict([(name, User_from_basic(basic)) for name, basic in obj])
 
     def _users_to_basic(self, users):
-        return list(sorted([[name, U.basic()] for name, U in users.iteritems()]))
+        new = list(sorted([[name, U.basic()] for name, U in users.iteritems()]))
+        return new
 
     def _basic_to_server_conf(self, obj):
         from sagenb.notebook.server_conf import ServerConfiguration_from_basic
@@ -192,7 +193,7 @@ class FilesystemDatastore(Datastore):
         self._save(basic, 'conf.pickle')
         self._permissions('conf.pickle')
 
-    def load_users(self):
+    def load_users(self, user_manager):
         """
         OUTPUT:
 
@@ -201,16 +202,22 @@ class FilesystemDatastore(Datastore):
         EXAMPLES::
         
             sage: from sagenb.notebook.user import User
+            sage: from sagenb.notebook.user_manager import SimpleUserManager
+            sage: U = SimpleUserManager()
             sage: users = {'admin':User('admin','abc','a@b.c','admin'), 'wstein':User('wstein','xyz','b@c.d','user')}
             sage: from sagenb.storage import FilesystemDatastore
             sage: ds = FilesystemDatastore(tmp_dir())
             sage: ds.save_users(users)
             sage: 'users.pickle' in os.listdir(ds._path)
             True
-            sage: ds.load_users()
+            sage: users = ds.load_users(U)
+            sage: U.users()
             {'admin': admin, 'wstein': wstein}
         """
-        return self._basic_to_users(self._load('users.pickle'))
+        for user in self._basic_to_users(self._load('users.pickle')).itervalues():
+            user_manager.add_user_object(user) 
+            user_manager.set_password(user.username(), user.password(), encrypt = False)
+        return user_manager
     
     def save_users(self, users):
         """
@@ -221,15 +228,19 @@ class FilesystemDatastore(Datastore):
         EXAMPLES::
         
             sage: from sagenb.notebook.user import User
-            sage: users = {'admin':User('admin','abc','a@b.c','admin'), 'xyz':User('xyz','myalksjf','b@c.d','user')}
+            sage: from sagenb.notebook.user_manager import SimpleUserManager
+            sage: U = SimpleUserManager()
+            sage: users = {'admin':User('admin','abc','a@b.c','admin'), 'wstein':User('wstein','xyz','b@c.d','user')}
             sage: from sagenb.storage import FilesystemDatastore
             sage: ds = FilesystemDatastore(tmp_dir())
             sage: ds.save_users(users)
             sage: 'users.pickle' in os.listdir(ds._path)
             True
-            sage: ds.load_users()
-            {'admin': admin, 'xyz': xyz}
+            sage: users = ds.load_users(U)
+            sage: U.users()
+            {'admin': admin, 'wstein': wstein}
         """
+        print 'in users', users
         self._save(self._users_to_basic(users), 'users.pickle')
         self._permissions('users.pickle')
         
