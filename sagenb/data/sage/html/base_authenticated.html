@@ -4,20 +4,20 @@
     <ul>
         <li class="username">{{ username }}</li>
         {% if username == 'guest' %}
-        <li><a title="Please log in to the Sage notebook" href="/">Log in</a></li>
+        <li><a title="Please log in to the Sage notebook" href="{{url_for('base.index')}}">Log in</a></li>
         {% else %}
         <li><a id="toggle-link" title="Toggle the top bar" onClick="$('#worksheet-bar').toggle()">Toggle</a></li>
-        <li><a title="Back to your personal worksheet list" href="/home/{{ username }}">Home</a></li>
+        <li><a title="Back to your personal worksheet list" href="{{url_for('worksheet_listing.home',username=username)}}">Home</a></li>
         {% if pub %}
         <li><span>Published</span></li>
         {% else %}
-        <li><a title="Browse the published worksheets" href="/pub">Published</a></li>
+        <li><a title="Browse the published worksheets" href="{{url_for('worksheet_listing.pub')}}">Published</a></li>
         <li><a title="View a log of recent computations" href="#" onClick="history_window()">Log</a></li>
         {% endif %}
-        <li><a title="Change account settings including password" href="/settings">Settings</a></li>
+        <li><a title="Change account settings including password" href="{{url_for('settings.settings_page')}}">Settings</a></li>
         <li><a title="Documentation" href="#" onClick="help()">Help</a></li>
         <li><a title="Report a problem or submit a bug to improve Sage" href="#" onClick="bugreport()">Report a Problem</a></li>
-        <li><a title="Log out of the Sage notebook" href="/logout">Sign out</a></li>
+        <li><a title="Log out of the Sage notebook" href="{{url_for('authentication.logout')}}">Sign out</a></li>
         {% endif %}
     </ul>
 </div>
