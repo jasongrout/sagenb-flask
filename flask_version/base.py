@@ -87,6 +87,41 @@ jsmath_image_fonts = is_package_installed("jsmath-image-fonts")
 
 base = Module('flask_version.base')
 
+# from http://flask.pocoo.org/mailinglist/archive/2010/7/21/running-behind-proxy-with-url-prefix-other-than/#350beec683d8fc02f50613e235e6a413
+# TODO: just make it so that we can specify the prefix directly also
+class ReverseProxied(object):
+     """Wrap the application in this middleware and configure the front-end server
+     to add these headers, to let you quietly bind this to a URL other than /
+     and to an HTTP scheme that is different than what is used locally.
+
+     In nginx:
+         location /myprefix {
+             proxy_pass http://192.168.0.1:5001;     # where Flask app runs
+             proxy_set_header Host $host;
+             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+             proxy_set_header X-Scheme $scheme;
+             proxy_set_header X-Script-Name /myprefix;
+             }
+
+     :param app: the WSGI application
+     """
+     def __init__(self, app):
+         self.app = app
+
+     def __call__(self, environ, start_response):
+         script_name = environ.get('HTTP_X_SCRIPT_NAME', '')
+         if script_name:
+             environ['SCRIPT_NAME'] = script_name
+             path_info = environ['PATH_INFO']
+             if path_info.startswith(script_name):
+                 environ['PATH_INFO'] = path_info[len(script_name):]
+
+         scheme = environ.get('HTTP_X_SCHEME', '')
+         if scheme:
+             environ['wsgi.url_scheme'] = scheme
+         return self.app(environ, start_response)
+
+
 
 
 #############
@@ -285,6 +320,7 @@ def create_app(path_to_notebook, *args, **kwds):
     # Create app #
     ##############
     app = SageNBFlask('flask_version', startup_token=startup_token)
+    app.wsgi_app = ReverseProxied(app.wsgi_app)
     app.secret_key = os.urandom(24)
     oid.init_app(app)
     app.debug = True
