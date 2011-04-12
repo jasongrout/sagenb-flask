@@ -6,18 +6,18 @@
         <title>{{ render_title() }} -- Sage</title>
         {% block more_meta %}{% endblock %}
         {% block pre_main_css %}{% endblock %}
-        <link type="text/css" rel="stylesheet" href="/css/{% block css %}main{% endblock %}.css" />
+        <link type="text/css" rel="stylesheet" href="{{url_for('.static',filename='/css')}}/{% block css %}main{% endblock %}.css" />
         {% block more_css %}{% endblock %}
         {# jQuery and other universally used libraries #}
-        <script type="text/javascript" src="/javascript/jquery/jquery-1.5.2.min.js"></script>
+        <script type="text/javascript" src="{{url_for('.static',filename='/javascript/jquery/jquery-1.5.2.min.js')}}"></script>
         {% block javascript %}
         {# Page-specific libraries #}
-        <script type="text/javascript" src="/javascript/sage/ws_list.js"></script>
+        <script type="text/javascript" src="{{url_for('.static',filename='/javascript/sage/ws_list.js')}}"></script>
         {% endblock %}
         {% block more_javascript %}
         {% endblock %}
         {# Behavior #}
-        <script type="text/javascript" src="/javascript/sage/master.js"></script>
+        <script type="text/javascript" src="{{url_for('.static',filename='/javascript/sage/master.js')}}"></script>
     </head>
     <body id="{% block page_id %}{% endblock %}"
           class="{% block body_classes %}{% endblock %}">
@@ -27,7 +27,7 @@
             <div id="top-bar">
                 <div id="banner">
                     <a class="banner" href="http://nb.sagemath.org/">
-                        <img align="top" src="/images/sagenb.png" alt="Sage" /><span>The Sage Notebook</span>
+                        <img align="top" src="{{url_for('.static',filename='/images/sagenb.png')}}" alt="Sage" /><span>The Sage Notebook</span>
                     </a>
                     <span class="ping" id="ping">Searching for Sage server...</span>
                     <div class="version">
